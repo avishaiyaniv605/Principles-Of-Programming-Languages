@@ -1,0 +1,147 @@
+#lang racket
+
+
+;; part a
+
+; (define make-tree list)
+; (define add-subtree cons)
+;; (define make-leaf (lambda (d:T1): List<T1> d))
+; (define empty-tree empty)
+; (define first-subtree car)
+; (define rest-subtrees cdr)
+;; (define leaf-data (lambda (x: List<T1>): T2 x))
+; (define composite-tree? pair?)
+;; (define leaf? (lambda (t: T1): Boolean (not (list? t))))
+; (define empty-tree? empty?)
+
+
+;; The empty lazy list value (a singleton datatype)
+(define empty-lzl '())
+
+;; Purpose: Value constructor for non-empty lazy-list values
+;; Type: [T * [Empty -> LZL(T)] -> LZT(T)]
+(define cons-lzl cons)
+
+;; Accessors
+;; Type: [LZL(T) -> T]
+;; Precondition: Input is non-empty
+(define head car)
+
+;; Type: [LZL(T) -> LZL(T)]
+;; Precondition: Input is non-empty
+;; Note that this *executes* the continuation 
+(define tail
+  (lambda (lzl)
+  ((cdr lzl))))
+  
+;; Type predicate
+(define empty-lzl? empty?)
+
+;; Signature: take(lz-lst,n)
+;; Type: [LzL*Number -> List]
+;; If n > length(lz-lst) then the result is lz-lst as a List
+(define take
+  (lambda (lz-lst n)
+    (if (or (= n 0) (empty-lzl? lz-lst))
+      empty-lzl
+      (cons (head lz-lst)
+            (take (tail lz-lst) (- n 1))))))
+
+
+; Signature: make-tree(1st, ..., nth)
+; Type: [Tree * ... * Tree -> Tree]
+(define make-tree list)
+
+; Signature: add-subtree(subtree, tree)
+; Type: [Tree * Tree -> Tree]
+(define add-subtree cons)
+
+; Signature: make-leaf(data)
+; Type: [T -> Tree]
+(define make-leaf (lambda (d) d))
+
+; Signature: empty-tree
+; Type: Empty-Tree
+(define empty-tree empty)
+
+; Signature: first-subtree(tree)
+; Type: [Tree -> Tree]
+(define first-subtree car)
+
+; Signature: rest-subtree(tree)
+; Type: [Tree -> Tree]
+(define rest-subtree cdr)
+
+; Signature: leaf-data(leaf)
+; Type: [Tree -> T]
+(define leaf-data (lambda (x) x))
+
+; Signature: composite-tree?(e)
+; Type: [T -> Boolean]
+(define composite-tree? pair?)
+
+; Signature: leaf?(e)
+; Type: [T -> Boolean]
+(define leaf? (lambda (t) (not (list? t))))
+
+; Signature: empty-tree?(e)
+; Type: [T -> Boolean]
+(define empty-tree? empty?)
+
+
+; Signature: tree->leaves(tree)
+; Type: [Tree -> list]
+(define tree->leaves
+  (lambda (tree)
+        (cond ((empty-tree? tree) tree)
+              ((leaf? tree) (make-tree tree))
+              (else (append (tree->leaves (first-subtree tree)) (tree->leaves (rest-subtree tree))))
+        )                    
+  )
+)
+
+;; Signature: tree->lz-leaves(tree)
+;; Type: [Tree -> lz-list]
+(define tree->lz-leaves
+  (lambda (tree)      
+    (do-tree->lz-leaves (tree->leaves tree))
+    )
+)
+
+;; Signature: do-tree->lz-leaves(tree)
+;; Type: [trTreeee -> lz-list]
+(define do-tree->lz-leaves
+  (lambda (tree)
+        (cond ((empty-tree? tree) tree)
+              (else (cons-lzl (first-subtree tree) (lambda () (do-tree->lz-leaves (rest-subtree tree)))))
+        )
+      )
+   )
+
+;; Signature: same-leaves?(tree1, tree2)
+;; Type: [Tree*Tree -> Boolean]
+(define same-leaves?
+  (lambda (tree1 tree2)
+    (do-same-leaves (tree->lz-leaves tree1) (tree->lz-leaves tree2))
+    )
+  )
+
+;; Signature: do-same-leaves(tree1, tree2)
+;; Type: [Tree*Tree -> Boolean | tree]
+(define do-same-leaves
+  (lambda (lzl1 lzl2)
+    (if (empty? lzl1)
+        (if (empty? lzl2) #t
+            (cons '() (head lzl2)))
+    (if (empty? lzl2) (cons (head lzl1) '())
+        (if (not (eq? (head lzl1) (head lzl2)))
+            (cons (head lzl1) (head lzl2))
+            (do-same-leaves (tail lzl1) (tail lzl2))
+        )
+    )
+    )
+   )
+  )
+    
+    
+;(same-leaves (make-tree 1 2) (make-tree 1 (make-tree 2 8)))
