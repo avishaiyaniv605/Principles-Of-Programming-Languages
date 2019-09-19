@@ -1,0 +1,63 @@
+(define empty?
+   (lambda (lst)
+    (if (eq? lst '()) #t #f)
+  )
+)
+
+(define list?
+    (lambda (lst)
+      (if (pair? lst) (list? (cdr lst))
+         (empty? lst) 
+      )
+    )
+)
+
+(define equal-list?
+   (lambda (lst1 lst2)
+   (if (not (and (list? lst1) (list? lst1))) #f
+      (if (empty? lst1) (empty? lst2)
+         (if (empty? lst2) #f 
+            (if (or (eq? (car lst1) (car lst2)) (equal-list? (car lst1) (car lst2)))
+            (equal-list? (cdr lst1) (cdr lst2)) #f
+            )
+         )
+      )
+   )
+  )
+)
+      
+(define append
+   (lambda (lst1 lst2)
+    (if (empty? lst1) lst2
+      (cons (car lst1) (append (cdr lst1) lst2)))
+   )
+)
+
+(define append3
+   (lambda (lst1 lst2 num)
+      (if (and (list? lst1) (list? lst2))
+      (append lst1 (append lst2 (list num)))
+      #f)
+   )
+)
+
+(define pascal
+   (lambda (n)
+      (better_pascal (- n 1) 0))
+)
+
+(define choose
+   (lambda (n k)
+      (if (= 0 k)
+         1
+      (/ (* n (choose (- n 1) (- k 1))) k))
+   )
+)
+
+(define better_pascal
+   (lambda (n k)
+   (if (< k n)
+      (append (list (choose n k)) (better_pascal n (+ k 1)))
+      '(1))
+   )
+)
